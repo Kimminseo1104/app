@@ -1,45 +1,49 @@
 package com.example.antiphishingapp.ui.navigation
 
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.antiphishingapp.feature.model.AnalysisResponse
-import com.example.antiphishingapp.ui.analysis.AnalysisScreen
+import com.example.antiphishingapp.ui.screen.AnalysisScreen
+import com.example.antiphishingapp.ui.screen.RealtimeScreen
 import com.example.antiphishingapp.ui.main.MainScreen
 
 @Composable
 fun AppNavGraph(navController: NavHostController) {
-    var analysisResult by remember { mutableStateOf<AnalysisResponse?>(null) }
+    val analysisResult = remember { mutableStateOf<AnalysisResponse?>(null) }
 
     NavHost(
         navController = navController,
         startDestination = "main"
     ) {
-        // ✅ 1️⃣ 이미지 선택 및 분석 요청 화면
+        // ✅ 메인 화면 (문서 업로드)
         composable("main") {
             MainScreen(
                 navController = navController,
-                onAnalysisComplete = { response ->
-                    analysisResult = response
-                    navController.navigate("analysis") // 결과 화면으로 이동
+                onAnalysisComplete = { result ->
+                    analysisResult.value = result
                 }
             )
         }
 
-        // ✅ 2️⃣ 분석 결과 화면
+        // ✅ 문서 분석 결과 화면
         composable("analysis") {
-            analysisResult?.let {
+            analysisResult.value?.let { result ->
                 AnalysisScreen(
-                    result = it,
+                    result = result,
                     onBackToMain = {
-                        analysisResult = null
-                        navController.navigate("main") {
-                            popUpTo("main") { inclusive = true }
-                        }
+                        navController.popBackStack("main", inclusive = false)
                     }
                 )
             }
+        }
+
+        // ✅ 실시간 보이스피싱 탐지 화면
+        composable("realtime") {
+            RealtimeScreen()
         }
     }
 }
