@@ -41,12 +41,21 @@ fun SignUpScreen(
     val privacyChecked by viewModel.privacyChecked.observeAsState(false)
     val isLoading by viewModel.isLoading.observeAsState(false)
     val toastMessage by viewModel.toastMessage.observeAsState()
+    val signUpSuccess by viewModel.signUpSuccess.observeAsState(false)
 
     val context = LocalContext.current
     LaunchedEffect(toastMessage) {
         toastMessage?.let {
             Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
             viewModel.onToastMessageShown()
+        }
+    }
+
+    LaunchedEffect(signUpSuccess) {
+        if (signUpSuccess) {
+            navController.navigate("login") {
+                popUpTo("signup") { inclusive = true }
+            }
         }
     }
 
@@ -110,7 +119,7 @@ fun SignUpScreen(
                 text = "이미 계정이 있으신가요?",
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
-                    .clickable { /* TODO: 로그인 화면으로 이동 */ },
+                    .clickable { navController.navigate("login") },
                 style = MaterialTheme.typography.bodyMedium,
                 color = Grayscale600
             )
