@@ -40,6 +40,9 @@ class SignUpViewModel : ViewModel() {
     private val _toastMessage = MutableLiveData<String?>()
     val toastMessage: LiveData<String?> = _toastMessage
 
+    private val _signUpSuccess = MutableLiveData(false)
+    val signUpSuccess: LiveData<Boolean> = _signUpSuccess
+
 
     // UI 이벤트 핸들러 함수
     fun onEmailChange(newEmail: String) { _email.value = newEmail }
@@ -71,7 +74,7 @@ class SignUpViewModel : ViewModel() {
                 val response = ApiClient.signup(signupRequest)
                 if (response.isSuccessful) {
                     _toastMessage.value = "회원가입 성공!"
-                    // TODO: 회원가입 성공 후 화면 이동 로직
+                    _signUpSuccess.value = true
                 } else {
                     val errorBody = response.errorBody()?.string() ?: "알 수 없는 오류"
                     _toastMessage.value = "회원가입 실패: $errorBody"
