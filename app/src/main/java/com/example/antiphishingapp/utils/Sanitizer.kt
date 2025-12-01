@@ -8,8 +8,7 @@ object Sanitizer {
     // 🔹 URL 추출용 정규식 (한글 도메인, https/http, www 지원)
     private val URL_PATTERN: Pattern = Pattern.compile(
         // (?i) 대소문자 무시, (?:https?://|www\.) 로 시작, 그 뒤 허용 문자들
-        """(?i)\b(?:https?://|www\.)[\w\-.~:/?\[\]#@!$&'()*+,;=%\p{L}\p{N}]+""",
-        Pattern.UNICODE_CHARACTER_CLASS
+        """(?i)\b(?:https?://|www\.)[\w\-.~:/?\[\]#@!$&'()*+,;=%\p{L}\p{N}]+"""
     )
 
     /** 📍 문자에서 URL 목록 추출 */
