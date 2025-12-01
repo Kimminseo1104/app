@@ -51,6 +51,15 @@ class MainActivity : ComponentActivity() {
             Log.e("OpenCV", "OpenCV 초기화 실패")
         }
 
+        // 다른 앱 위에 표시 권한 요청
+        if (!android.provider.Settings.canDrawOverlays(this)) {
+            val intent = android.content.Intent(
+                android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                android.net.Uri.parse("package:$packageName")
+            )
+            startActivity(intent)
+        }
+
         // 문자 관련 권한 요청
         checkSmsPermission()
 

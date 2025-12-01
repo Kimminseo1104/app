@@ -69,10 +69,24 @@ class SmsReceiver : BroadcastReceiver() {
                 ) {
                     if (response.isSuccessful) {
                         val result = response.body()
+                        val score = (result?.phishing_score as? Number)?.toInt() ?: 0
                         Log.d(
                             "SmsReceiver",
                             "✅ Phishing=${result?.phishing_score}, keywords=${result?.keywords_found}, urls=${result?.url_results?.size}"
                         )
+
+                        if (score >= 70) {
+                            val popupIntent = Intent(context, com.example.antiphishingapp.ui.AlertActivity::class.java).apply {
+                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                            }
+                            context.startActivity(popupIntent)
+                            Log.d("SmsReceiver", "🚨 위험 감지! 알림창 실행됨 (점수: $score)")
+                        } else {
+                            Log.d("SmsReceiver", "🛡️ 안전한 문자입니다. 알림을 띄우지 않습니다. (점수: $score)")
+                        }
+
                     } else {
                         Log.e("SmsReceiver", "❌ Server error: ${response.code()}")
                     }

@@ -66,7 +66,7 @@ fun MessageAlertCard(
                     shape = RoundedCornerShape(18.dp),
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text("키워드 확인하기", color = Color.White, fontSize = 17.sp)
+                    Text("키워드 확인하기", color = Color.White, fontSize = 14.sp)
                 }
 
                 Spacer(Modifier.width(12.dp))
@@ -77,7 +77,7 @@ fun MessageAlertCard(
                     shape = RoundedCornerShape(18.dp),
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text("알림 지우기", color = Primary900, fontSize = 17.sp)
+                    Text("알림 지우기", color = Primary900, fontSize = 14.sp)
                 }
             }
         }

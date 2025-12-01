@@ -27,6 +27,9 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
 
+    <!-- ✅ 다른 앱 위에 그리기 권한 추가 -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+
     <!-- ⚠️ mediaProjection 권한은 삭제 (화면 캡처용으로 불필요하며 crash 원인) -->
     <!-- <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" /> -->
 
@@ -66,6 +69,14 @@
                 <data android:scheme="antiphishingapp" android:host="navercallback" />
             </intent-filter>
         </activity>
+
+        <!-- ✅ 투명 팝업 액티비티 등록 -->
+        <activity
+            android:name=".ui.AlertActivity"
+            android:exported="false"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"
+            android:launchMode="singleInstance"
+            android:excludeFromRecents="true" />
 
         <!-- ✅ 문자 수신 리시버 -->
         <receiver
