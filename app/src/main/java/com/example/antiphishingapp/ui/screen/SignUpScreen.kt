@@ -63,7 +63,8 @@ fun SignUpScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp)
+                .padding(horizontal = 24.dp)
+                .padding(top = 60.dp, bottom = 24.dp)
         ) {
             AuthInputField(
                 label = "이메일*", value = email, onValueChange = viewModel::onEmailChange,
