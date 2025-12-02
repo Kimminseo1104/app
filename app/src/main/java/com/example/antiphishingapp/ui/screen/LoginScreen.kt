@@ -1,6 +1,10 @@
 package com.example.antiphishingapp.ui.screen
 
 import android.widget.Toast
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -17,20 +21,24 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.antiphishingapp.R
 import com.example.antiphishingapp.feature.viewmodel.LoginViewModel
 import com.example.antiphishingapp.theme.Grayscale100
 import com.example.antiphishingapp.theme.Grayscale600
+import com.example.antiphishingapp.theme.Primary100
+import com.example.antiphishingapp.theme.Primary300
 import com.example.antiphishingapp.theme.Primary900
 import com.example.antiphishingapp.theme.Pretendard
 
@@ -46,6 +54,19 @@ fun LoginScreen(
     val loginSuccess by viewModel.loginSuccess.observeAsState(false)
     val isAutoLoginChecked by viewModel.isAutoLoginChecked.observeAsState(false)
     val context = LocalContext.current
+
+    // 로그인 버튼 인터랙션 소스 및 상태 정의
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val isHovered by interactionSource.collectIsHoveredAsState()
+
+    // 상태에 따른 버튼 색상 결정 (마우스 오버 또는 눌렸을 때 색상 반전)
+    val isActive = isPressed || isHovered
+    // 로딩 중이 아닐 때만 hover 효과 적용 (로딩 중엔 기본 색상 유지)
+    val finalIsActive = isActive && !isLoading
+
+    val buttonContainerColor = if (finalIsActive) Primary900 else Primary300
+    val buttonContentColor = if (finalIsActive) Primary100 else Primary900
 
     // 로그인 성공 시 메인 화면으로 이동
     LaunchedEffect(loginSuccess) {
@@ -75,22 +96,14 @@ fun LoginScreen(
             verticalArrangement = Arrangement.Center
         ) {
 
-            // 상단 로고/제목 영역
-            // TODO: 실제 로고 이미지 삽입
-            Box(
+            // 상단 로고 영역
+            Image(
+                painter = painterResource(id = R.drawable.ic_savephishing_logo),
+                contentDescription = "구해줘 피싱 로고",
+                contentScale = ContentScale.FillWidth,
                 modifier = Modifier
-                    .size(100.dp)
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(Color.Gray)
-                    .padding(bottom = 16.dp)
-            )
-
-            Text(
-                text = "보이스피싱 및\n문서 위조 탐지 APP", // TODO: 앱 이름 확정 시 수정
-                style = MaterialTheme.typography.headlineLarge,
-                fontWeight = FontWeight.Bold,
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                modifier = Modifier.padding(bottom = 60.dp)
+                    .fillMaxWidth(0.8f)
+                    .padding(bottom = 50.dp) // 입력 필드와의 간격
             )
 
             // 아이디 (이메일) 입력 필드
@@ -117,7 +130,7 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // 자동 로그인 및 기타 링크
+            // 자동 로그인 체크박스
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -125,8 +138,14 @@ fun LoginScreen(
                 Checkbox(
                     checked = isAutoLoginChecked,
                     onCheckedChange = viewModel::onAutoLoginCheckedChange,
-                    colors = CheckboxDefaults.colors(checkedColor = Primary900))
-                Text("자동 로그인", style = MaterialTheme.typography.bodyMedium.copy(fontFamily = Pretendard))
+                    colors = CheckboxDefaults.colors(checkedColor = Primary900),
+                    enabled = !isLoading
+                )
+                Text(
+                    "자동 로그인",
+                    style = MaterialTheme.typography.bodyMedium.copy(fontFamily = Pretendard),
+                    color = Grayscale600
+                )
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -135,16 +154,32 @@ fun LoginScreen(
             Button(
                 onClick = viewModel::onLoginClicked,
                 enabled = !isLoading,
-                colors = ButtonDefaults.buttonColors(containerColor = Primary900),
+                interactionSource = interactionSource, // 인터랙션 소스 연결
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = buttonContainerColor,
+                    contentColor = buttonContentColor,
+                    disabledContainerColor = Primary300, // 로딩 중 비활성화 색상 유지
+                    disabledContentColor = Primary900
+                ),
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp)
             ) {
                 if (isLoading) {
-                    CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                    // 로딩 인디케이터 색상도 현재 버튼 텍스트 색상과 일치시킴
+                    CircularProgressIndicator(
+                        color = buttonContentColor,
+                        modifier = Modifier.size(24.dp)
+                    )
                 } else {
-                    Text("로그인하기", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Text(
+                        "로그인하기",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = Pretendard
+                        )
+                    )
                 }
             }
 

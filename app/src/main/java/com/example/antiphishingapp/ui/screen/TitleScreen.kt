@@ -6,6 +6,9 @@ import android.widget.Toast
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -15,7 +18,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.layout.ContentScale
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.antiphishingapp.R
@@ -23,6 +26,7 @@ import com.example.antiphishingapp.feature.viewmodel.SocialLoginViewModel
 import kotlinx.coroutines.flow.collectLatest
 import com.example.antiphishingapp.theme.Primary900
 import com.example.antiphishingapp.theme.Primary300
+import com.example.antiphishingapp.theme.Primary100
 import com.example.antiphishingapp.theme.Pretendard
 
 @Composable
@@ -70,21 +74,21 @@ fun TitleScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
-                // 상단 Title 영역
+                // 상단 로고 영역
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.weight(1f) // 하단 버튼을 아래로 밀기
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.Center // 로고를 화면 상단~중간 영역의 중앙에 배치
                 ) {
-                    Spacer(modifier = Modifier.height(100.dp)) // 상단 여백 조정
-
-                    Text(
-                        text = "Title", // 폰트 파일이 없으므로, Pretendard에 큰 사이즈만 적용
-                        style = MaterialTheme.typography.displayLarge.copy(
-                            color = Primary900,
-                            fontSize = 54.sp,
-                            fontWeight = FontWeight.Bold // 필기체 느낌을 Bold로 대체
-                        ),
-                        modifier = Modifier.padding(bottom = 120.dp) // 제목 하단 여백
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_savephishing_logo),
+                        contentDescription = "구해줘 피싱 로고",
+                        // 가로 너비에 맞춰 이미지를 꽉 채움 (비율 유지)
+                        contentScale = ContentScale.FillWidth,
+                        modifier = Modifier
+                            // 부모 컨테이너(화면) 너비의 80% 만큼 차지하도록 설정 (필요시 조절)
+                            .fillMaxWidth(0.8f)
+                            .padding(bottom = 60.dp)
                     )
                 }
 
@@ -94,24 +98,20 @@ fun TitleScreen(
                     modifier = Modifier.fillMaxWidth().padding(bottom = 32.dp)
                 ) {
                     // 일반 로그인 버튼
-                    AuthButton(
+                    InteractiveAuthButton(
                         text = "로그인",
-                        color = Primary900,
-                        contentColor = Color.White,
                         onClick = { navController.navigate("login") }
                     )
 
                     Spacer(modifier = Modifier.height(16.dp)) // 로그인, 회원가입 버튼 간격
 
                     // 회원가입 버튼
-                    AuthButton(
+                    InteractiveAuthButton(
                         text = "회원가입",
-                        color = Primary300,
-                        contentColor = Primary900, // 텍스트 색상
                         onClick = { navController.navigate("signup") }
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp)) // 일반 버튼과 소셜 버튼 간의 큰 간격
+                    Spacer(modifier = Modifier.height(16.dp)) // 일반 버튼, 소셜 버튼 간격
 
                     // 카카오 로그인 버튼
                     SocialLoginButton(
@@ -144,17 +144,46 @@ fun TitleScreen(
     )
 }
 
-// --- 보조 컴포넌트 수정: AuthButton 분리 및 SocialLoginButton 아이콘 간격 수정 ---
+// --- 보조 컴포넌트 ---
 
+/**
+ * 상태(마우스 오버/클릭)에 따라 색상이 변하는 인증 버튼
+ * 기본: 배경 Primary300 / 글자 Primary900
+ * 활성: 배경 Primary900 / 글자 Primary100
+ */
 @Composable
-fun AuthButton(text: String, color: Color, contentColor: Color, onClick: () -> Unit) {
-    // 디자인에 맞게 ButtonDefaults를 사용하여 색상 지정
+fun InteractiveAuthButton(
+    text: String,
+    onClick: () -> Unit
+) {
+    // 인터랙션 상태 감지
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val isHovered by interactionSource.collectIsHoveredAsState()
+
+    // 상태에 따른 색상 결정
+    // 마우스가 올라가거나(Hover), 눌렸을 때(Press) 색상 변경
+    val containerColor = if (isPressed || isHovered) Primary900 else Primary300
+    val contentColor = if (isPressed || isHovered) Primary100 else Primary900
+
     Button(
         onClick = onClick,
-        colors = ButtonDefaults.buttonColors(containerColor = color, contentColor = contentColor),
-        modifier = Modifier.fillMaxWidth().height(56.dp)
+        interactionSource = interactionSource,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = containerColor,
+            contentColor = contentColor
+        ),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(56.dp)
     ) {
-        Text(text = text, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold, fontFamily = Pretendard))
+        Text(
+            text = text,
+            style = MaterialTheme.typography.titleMedium.copy(
+                fontWeight = FontWeight.SemiBold,
+                fontFamily = Pretendard
+            )
+        )
     }
 }
 
