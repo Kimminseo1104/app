@@ -7,6 +7,13 @@ import androidx.compose.ui.text.font.*
 import androidx.compose.ui.unit.sp
 import com.example.antiphishingapp.R
 
+// NPS Font Family
+val NPSFont = FontFamily(
+    Font(R.font.npsfont_regular, FontWeight.Normal),
+    Font(R.font.npsfont_bold, FontWeight.Bold),
+    Font(R.font.npsfont_extrabold, FontWeight.ExtraBold)
+)
+
 // Pretendard Font Family
 val Pretendard = FontFamily(
     Font(R.font.pretendard_thin, FontWeight.Thin),
