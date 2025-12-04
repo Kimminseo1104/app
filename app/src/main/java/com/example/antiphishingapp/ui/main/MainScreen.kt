@@ -77,7 +77,7 @@ fun MainScreen(
 
             // 상단 바
             TopBar()
-            Spacer(modifier = Modifier.height(100.dp))
+            Spacer(modifier = Modifier.height(97.dp))
 
             // 환영 메시지
             Greeting()
