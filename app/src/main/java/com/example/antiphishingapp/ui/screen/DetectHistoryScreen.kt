@@ -92,7 +92,7 @@ fun DetectHistoryScreen(
                 title = "문자 내역 확인",
                 description = "수신한 문자에 대한\n탐지 기록을 확인할 수 있습니다.",
                 iconRes = R.drawable.message_history,
-                onClick = { /* TODO: 문자 내역 확인 로직으로 이동 */ }
+                onClick = { navController.navigate("smsList") }
             )
             Spacer(modifier = Modifier.height(25.dp))
 
