@@ -51,9 +51,9 @@ fun VoiceUploadResultScreen(
 
     // 2. 위험도에 따른 텍스트 결정 로직 (보이스피싱 맥락으로 수정)
     val (resultText, descriptionText) = when (riskScore) {
-        in 70..100 -> "보이스피싱 확률이 높습니다." to "보이스피싱 등 범죄 목적으로\n준비된 내용일 확률이 높습니다."
-        in 45..69 -> "보이스피싱 확률이 있습니다." to "보이스피싱일 가능성이 있으니\n주의 깊게 확인해주세요."
-        else -> "보이스피싱 확률이 낮습니다." to "보이스피싱일 확률이 낮습니다.\n안심하셔도 좋습니다."
+        in 70..100 -> "보이스피싱 확률이 높습니다." to "범죄 목적으로 준비된 내용일 확률이 높습니다."
+        in 45..69 -> "보이스피싱 확률이 있습니다." to "주의 깊게 확인해주세요."
+        else -> "보이스피싱 확률이 낮습니다." to "주요 의심 징후가 탐지되지 않았습니다."
     }
 
     Scaffold(
@@ -92,23 +92,26 @@ fun VoiceUploadResultScreen(
                         modifier = Modifier.padding(end = 16.dp)
                     )
 
-                    Text(
-                        text = resultText,
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            fontWeight = FontWeight.SemiBold,
-                            color = Grayscale900,
-                            lineHeight = 20.sp
+                    Column {
+                        Text(
+                            text = resultText,
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                fontWeight = FontWeight.SemiBold,
+                                color = Grayscale900
+                            )
                         )
-                    )
-                }
 
-                Text(
-                    text = descriptionText,
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        color = Grayscale600
-                    ),
-                    modifier = Modifier.padding(top = 4.dp)
-                )
+
+                        Text(
+                            text = descriptionText,
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                fontWeight = FontWeight.SemiBold,
+                                color = Grayscale900
+                            ),
+                            modifier = Modifier.padding(top = 2.dp)
+                        )
+                    }
+                }
             }
 
             // [중간 스크롤 영역] 이미지 영역 없이 바로 의심 항목 리스트 표시
@@ -211,7 +214,7 @@ fun VoiceSuspiciousItemsBox(items: List<SuspiciousItem>) {
                         fontWeight = FontWeight.Medium,
                         lineHeight = 20.sp
                     ),
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f).padding(top = 1.dp)
                 )
             }
 

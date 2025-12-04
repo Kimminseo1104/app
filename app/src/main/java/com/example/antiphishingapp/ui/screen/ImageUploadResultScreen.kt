@@ -105,28 +105,32 @@ fun ImageUploadResultScreen(
                             modifier = Modifier.padding(end = 16.dp)
                         )
 
-                        Text(
-                            text = when {
-                                forgeryScore >= 70 -> "위조 문서 확률이 높습니다."
-                                forgeryScore >= 45 -> "위조 문서일 가능성이 있습니다."
-                                else -> "위조 문서 가능성이 낮습니다."
-                            },
-                            style = MaterialTheme.typography.bodyMedium.copy(
-                                fontWeight = FontWeight.SemiBold,
-                                color = Grayscale900
+                        Column {
+                            Text(
+                                text = when {
+                                    forgeryScore >= 70 -> "위조 문서일 확률이 높습니다."
+                                    forgeryScore >= 45 -> "위조 문서일 가능성이 있습니다."
+                                    else -> "위조 문서일 가능성이 낮습니다."
+                                },
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = Grayscale900
+                                )
                             )
-                        )
-                    }
 
-                    Text(
-                        text = when {
-                            forgeryScore >= 70 -> "보이스피싱 등 의심 용도로 위조된 문서일 가능성이 높습니다."
-                            forgeryScore >= 45 -> "주의 깊게 확인해주세요."
-                            else -> "큰 문제는 없어 보입니다."
-                        },
-                        style = MaterialTheme.typography.bodySmall.copy(color = Grayscale600),
-                        modifier = Modifier.padding(top = 4.dp)
-                    )
+                            Text(
+                                text = when {
+                                    forgeryScore >= 70 -> "보이스피싱 등 범죄 목적으로 위조된 문서일 가능성이 높습니다."
+                                    forgeryScore >= 45 -> "주의 깊게 확인해주세요."
+                                    else -> "주요 위조 의심 징후가 탐지되지 않았습니다."
+                                },
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = Grayscale900),
+                                modifier = Modifier.padding(top = 2.dp)
+                            )
+                        }
+                    }
                 }
 
 
@@ -386,10 +390,12 @@ fun SuspiciousItemsBox(items: List<SuspiciousItem>) {
                         fontWeight = FontWeight.Medium,
                         lineHeight = 20.sp
                     ),
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f).padding(top = 1.dp)
                 )
             }
-            if (index < items.size - 1) Spacer(Modifier.height(20.dp))
+            if (index < items.size - 1) {
+                Spacer(Modifier.height(20.dp))
+            }
         }
     }
 }
