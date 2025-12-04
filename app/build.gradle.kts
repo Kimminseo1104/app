@@ -80,6 +80,8 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.6")
     implementation("androidx.compose.runtime:runtime-livedata")
 
+    implementation("androidx.compose.material:material-icons-extended")
+
     // --- 네트워크 통신 ---
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
