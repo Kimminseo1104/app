@@ -77,7 +77,7 @@ fun MainScreen(
 
             // 상단 바
             TopBar()
-            Spacer(modifier = Modifier.height(97.dp))
+            Spacer(modifier = Modifier.height(103.dp))
 
             // 환영 메시지
             Greeting()
@@ -165,7 +165,7 @@ fun Greeting() {
             )
         }
 
-        Spacer(modifier = Modifier.height(18.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         Text(
             text = "보안 탐지를 시작하세요.",
