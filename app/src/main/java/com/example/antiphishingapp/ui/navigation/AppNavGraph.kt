@@ -10,7 +10,7 @@ import androidx.navigation.compose.composable
 import com.example.antiphishingapp.feature.model.AnalysisResponse
 import com.example.antiphishingapp.feature.viewmodel.LoginViewModel
 import com.example.antiphishingapp.feature.viewmodel.SocialLoginViewModel
-import com.example.antiphishingapp.ui.fileupload.FileUploadScreen
+import com.example.antiphishingapp.ui.screen.FileUploadScreen
 import com.example.antiphishingapp.ui.screen.AnalysisScreen
 import com.example.antiphishingapp.ui.screen.RealtimeScreen
 import com.example.antiphishingapp.ui.main.MainScreen
