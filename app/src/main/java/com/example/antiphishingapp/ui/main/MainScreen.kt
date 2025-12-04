@@ -29,6 +29,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -52,16 +53,20 @@ import com.example.antiphishingapp.theme.Grayscale800
 import com.example.antiphishingapp.theme.Grayscale900
 import com.example.antiphishingapp.theme.NPSFont
 import com.example.antiphishingapp.theme.Primary100
-import com.example.antiphishingapp.theme.Primary200
 import com.example.antiphishingapp.theme.Primary300
 import com.example.antiphishingapp.theme.Primary900
+import com.example.antiphishingapp.viewmodel.AuthViewModel
 
 
 @Composable
 fun MainScreen(
     navController: NavController,
-    onAnalysisComplete: (AnalysisResponse) -> Unit
+    onAnalysisComplete: (AnalysisResponse) -> Unit,
+    authViewModel: AuthViewModel
 ) {
+    val userState by authViewModel.user.collectAsState()
+    val userName = userState?.fullName ?: "사용자"
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Primary100
@@ -72,15 +77,14 @@ fun MainScreen(
                 .padding(horizontal = 24.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-
             Spacer(modifier = Modifier.height(32.dp))
 
             // 상단 바
-            TopBar()
+            TopBar(userName = userName)
             Spacer(modifier = Modifier.height(103.dp))
 
             // 환영 메시지
-            Greeting()
+            Greeting(userName = userName)
             Spacer(modifier = Modifier.height(32.dp))
 
             // 파일 업로드 카드
@@ -108,7 +112,7 @@ fun MainScreen(
 }
 
 @Composable
-fun TopBar() {
+fun TopBar(userName: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -121,13 +125,13 @@ fun TopBar() {
         ) {
             Box(
                 modifier = Modifier
-                    .size(40.dp)
+                    .size(32.dp)
                     .clip(CircleShape)
                     .background(Grayscale300)
             )
             Spacer(modifier = Modifier.width(12.dp))
             Text(
-                text = "홍길동",
+                text = userName,
                 style = AppTypography.titleMedium,
                 color = Grayscale800
             )
@@ -137,18 +141,18 @@ fun TopBar() {
             Icon(
                 imageVector = Icons.Default.Menu,
                 contentDescription = "Menu",
-                modifier = Modifier.size(28.dp)
+                modifier = Modifier.size(24.dp)
             )
         }
     }
 }
 
 @Composable
-fun Greeting() {
+fun Greeting(userName: String) {
     Column {
         Row(verticalAlignment = Alignment.Bottom) {
             Text(
-                text = "홍길동",
+                text = userName,
                 style = AppTypography.headlineLarge.copy(
                     fontFamily = NPSFont,
                     fontWeight = FontWeight.Normal
@@ -248,17 +252,6 @@ fun HelpSection(modifier: Modifier = Modifier) {
             modifier = Modifier.clickable { /* No action */ },
             style = AppTypography.bodyMedium,
             color = Grayscale600
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun MainScreenPreview() {
-    AntiPhishingAppTheme {
-        MainScreen(
-            navController = rememberNavController(),
-            onAnalysisComplete = {}
         )
     }
 }

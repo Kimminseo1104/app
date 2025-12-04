@@ -33,51 +33,51 @@ data class SmsDetectResponse(
 
 interface ApiService {
 
-    // ✅ 서버 상태 확인 (GET /healthz)
+    // 서버 상태 확인 (GET /healthz)
     @GET("healthz")
     fun checkHealth(): Call<String>
 
-    // ✅ 단일 이미지 업로드 (POST /upload-image)
+    // 단일 이미지 업로드 (POST /upload-image)
     @Multipart
     @POST("upload-image")
     fun uploadImage(
         @Part file: MultipartBody.Part
     ): Call<ResponseBody>
 
-    // ✅ 여러 이미지 업로드 (POST /upload-images)
+    // 여러 이미지 업로드 (POST /upload-images)
     @Multipart
     @POST("upload-images")
     fun uploadMultipleImages(
         @Part files: List<MultipartBody.Part>
     ): Call<ResponseBody>
 
-    // ✅ 음성 파일 업로드 (POST /api/transcribe/upload)
+    // 음성 파일 업로드 (POST /api/transcribe/upload)
     @Multipart
     @POST("api/transcribe/upload")
     fun uploadAudioFile(
         @Part file: MultipartBody.Part
     ): Call<ResponseBody>
 
-    // ✅ 음성 변환 상태 조회 (GET /api/transcribe/status/{token})
+    // 음성 변환 상태 조회 (GET /api/transcribe/status/{token})
     @GET("api/transcribe/status/{token}")
     fun getTranscribeStatus(
         @Path("token") token: String
     ): Call<ResponseBody>
 
-    // ✅ 문서 분석 (POST /process-request)
+    // 문서 분석 (POST /process-request)
     @Multipart
     @POST("process-request")
     fun processRequest(
         @Part file: MultipartBody.Part
-    ): Call<AnalysisResponse> // ✅ 여기만 변경됨
+    ): Call<AnalysisResponse>
 
-    // ✅ 문자 내용 분석 (POST /api/sms/detect_json)
+    // 문자 내용 분석 (POST /api/sms/detect_json)
     @POST("api/sms/detect_json")
     fun detectSmsJson(
         @Body payload: SmsDetectRequest
     ): Call<SmsDetectResponse>
 
-    // ✅ 음성 파일 분석 (STT + 보이스피싱 분석)
+    // 음성 파일 분석 (STT + 보이스피싱 분석)
     @Multipart
     @POST("api/voice-phishing/analyze-audio")
     fun analyzeAudioFile(
@@ -108,4 +108,9 @@ interface ApiService {
         @Field("state") state: String
     ): Response<TokenResponse>
 
+    // 로그인한 사용자 정보를 가져옴 (GET /auth/me)
+    @GET("auth/me")
+    suspend fun getMe(
+        @Header("Authorization") token: String
+    ): Response<UserResponse>
 }
