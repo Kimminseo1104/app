@@ -29,6 +29,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -57,11 +58,16 @@ import com.example.antiphishingapp.theme.Primary100
 import com.example.antiphishingapp.theme.Primary200
 import com.example.antiphishingapp.theme.Primary300
 import com.example.antiphishingapp.theme.Primary900
+import com.example.antiphishingapp.viewmodel.AuthViewModel
 
 @Composable
 fun DetectHistoryScreen(
-    navController: NavController
+    navController: NavController,
+    authViewModel: AuthViewModel
 ) {
+    val userState by authViewModel.user.collectAsState()
+    val userName = userState?.fullName ?: "사용자"
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Primary100
@@ -74,8 +80,7 @@ fun DetectHistoryScreen(
         ) {
             Spacer(modifier = Modifier.height(32.dp))
 
-            // 공통 TopBar
-            TopBar()
+            TopBar(userName = userName)
             Spacer(modifier = Modifier.height(62.dp))
 
             // 헤더
@@ -107,7 +112,7 @@ fun DetectHistoryScreen(
 }
 
 @Composable
-private fun TopBar() {
+private fun TopBar(userName: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -120,13 +125,13 @@ private fun TopBar() {
         ) {
             Box(
                 modifier = Modifier
-                    .size(40.dp)
+                    .size(32.dp)
                     .clip(CircleShape)
                     .background(Grayscale300)
             )
             Spacer(modifier = Modifier.width(12.dp))
             Text(
-                text = "홍길동",
+                text = userName,
                 style = AppTypography.titleMedium,
                 color = Grayscale800
             )
@@ -136,7 +141,7 @@ private fun TopBar() {
             Icon(
                 imageVector = Icons.Default.Menu,
                 contentDescription = "Menu",
-                modifier = Modifier.size(28.dp)
+                modifier = Modifier.size(24.dp)
             )
         }
     }
@@ -254,16 +259,6 @@ private fun HelpSection(modifier: Modifier = Modifier) {
             modifier = Modifier.clickable { /* No action */ },
             style = AppTypography.bodyMedium,
             color = Grayscale600
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun DetectHistoryScreenPreview() {
-    AntiPhishingAppTheme {
-        DetectHistoryScreen(
-            navController = rememberNavController()
         )
     }
 }

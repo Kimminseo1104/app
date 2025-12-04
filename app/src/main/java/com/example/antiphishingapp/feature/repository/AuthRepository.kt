@@ -5,9 +5,12 @@ import android.util.Log
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.example.antiphishingapp.feature.model.TokenResponse
+import com.example.antiphishingapp.feature.model.UserResponse
 import com.example.antiphishingapp.network.ApiClient
 
 /**
+ * AuthRepository
+ * ------------------------
  * 사용자 인증 토큰 (Access Token, Refresh Token)을 안전하게 저장하고 관리하는 Repository.
  * Context를 생성자로 받아 의존성을 주입받습니다.
  */
@@ -34,28 +37,13 @@ class AuthRepository(private val context: Context) {
         )
     }
 
-    // --- 네이버 State 저장 등 일반 설정을 위한 일반 SharedPreferences ---
+    // 네이버 State 저장 등 일반 설정을 위한 일반 SharedPreferences
     // 네이버 state 저장을 위해 사용 (민감 정보가 아니므로 일반 SharedPreferences 사용)
     private val appPrefs by lazy {
         context.getSharedPreferences("app_settings", Context.MODE_PRIVATE)
     }
 
-    /**
-     * 로그인 성공 후 토큰을 안전하게 저장합니다.
-     */
-    fun saveTokens(tokenResponse: TokenResponse) {
-        securePrefs.edit().apply {
-            putString(KEY_ACCESS_TOKEN, tokenResponse.accessToken)
-            putString(KEY_REFRESH_TOKEN, tokenResponse.refreshToken)
-            apply()
-        }
-    }
-
-    /**
-     * 로그인 성공 후 토큰과 자동 로그인 체크 여부를 저장
-     * @param tokenResponse 서버로부터 받은 토큰
-     * @param isAutoLogin 사용자가 자동 로그인 체크박스를 체크했는지 여부
-     */
+    // 로그인 성공 후 서버로부터 반환받은 토큰 및 자동 로그인 여부 저장
     fun saveTokens(tokenResponse: TokenResponse, isAutoLogin: Boolean) {
         securePrefs.edit().apply {
             putString(KEY_ACCESS_TOKEN, tokenResponse.accessToken)
@@ -65,25 +53,19 @@ class AuthRepository(private val context: Context) {
         }
     }
 
-    /**
-     * 저장된 Access Token을 반환합니다.
-     */
+    // 저장된 Access Token을 반환
     fun getAccessToken(): String? {
         // 토큰이 없으면 null 반환
         return securePrefs.getString(KEY_ACCESS_TOKEN, null)
     }
 
-    /**
-     * 저장된 Refresh Token을 반환합니다.
-     */
+    // 저장된 Refresh Token을 반환
     fun getRefreshToken(): String? {
         return securePrefs.getString(KEY_REFRESH_TOKEN, null)
     }
 
-    /**
-     * 토큰이 유효한지, 자동 로그인이 설정되어 있는지 확인
-     * 앱 시작 시 Splash 화면 등에서 이 함수를 호출하여 자동 로그인 여부를 판단
-     */
+    // 토큰이 유효한지, 자동 로그인이 설정되어 있는지 확인
+    // 앱 시작 시 Splash 화면 등에서 이 함수를 호출하여 자동 로그인 여부를 판단
     fun isAuthenticated(): Boolean {
         val hasToken = getAccessToken() != null
         val isAutoLogin = securePrefs.getBoolean(KEY_IS_AUTO_LOGIN, false)
@@ -92,36 +74,44 @@ class AuthRepository(private val context: Context) {
         return hasToken && isAutoLogin
     }
 
-    /**
-     * 저장된 모든 토큰을 삭제합니다 (로그아웃).
-     */
+    // 저장된 모든 토큰을 삭제
     fun clearTokens() {
         securePrefs.edit().clear().apply()
     }
 
-    // --- 네이버 State 및 일반 Key-Value 관리 메서드 (SocialLoginViewModel에서 사용) ---
+    // 로그인한 사용자의 정보를 가져옴
+    suspend fun getMe(): UserResponse? {
+        val token = getAccessToken() ?: return null
 
-    // 🚨 1. SharedPreferences에 Key-Value 저장 (SocialLoginViewModel.getNaverAuthUrl에서 state 저장 시 사용)
+        val response = ApiClient.apiService.getMe("Bearer $token")
+
+        return if (response.isSuccessful) {
+            response.body()
+        } else {
+            null
+        }
+    }
+
+
+    // 네이버 State 및 일반 Key-Value 관리 메서드 (SocialLoginViewModel에서 사용)
+
+    // 1. SharedPreferences에 Key-Value 저장 (SocialLoginViewModel.getNaverAuthUrl에서 state 저장 시 사용)
     fun saveValue(key: String, value: String) {
         appPrefs.edit().putString(key, value).apply()
     }
 
-    // 🚨 2. SharedPreferences에서 Key-Value 조회 (SocialLoginViewModel.handleCallbackUri에서 state 검증 시 사용)
+    // 2. SharedPreferences에서 Key-Value 조회 (SocialLoginViewModel.handleCallbackUri에서 state 검증 시 사용)
     fun getValue(key: String): String? {
         return appPrefs.getString(key, null)
     }
 
-    // 🚨 3. SharedPreferences에서 Key-Value 삭제
+    // 3. SharedPreferences에서 Key-Value 삭제
     fun clearValue(key: String) {
         appPrefs.edit().remove(key).apply()
     }
 
-
-    // --- 소셜 로그인 API 호출 메서드 ---
-    /**
-     * 소셜 인증 코드를 서버에 보내 JWT 토큰으로 교환합니다.
-     * (이 함수는 SocialLoginViewModel에서 호출됩니다.)
-     */
+    // 소셜 인증 코드를 서버에 보내 JWT 토큰으로 교환
+    // (이 함수는 SocialLoginViewModel에서 호출됩니다.)
     suspend fun exchangeCodeForToken(
         provider: String,
         code: String,
