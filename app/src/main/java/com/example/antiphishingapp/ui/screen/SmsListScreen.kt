@@ -74,7 +74,7 @@ fun SmsListScreen() {
         displayedMessages = when (selectedOption) {
             "최신순" -> filteredList.sortedByDescending { it.receivedDate }
             "번호순" -> filteredList.sortedBy { it.sender }
-            "위험도순" -> filteredList // 정렬 미구현
+            "위험도순" -> filteredList.sortedByDescending { it.riskScore }
             else -> filteredList
         }
     }

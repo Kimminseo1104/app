@@ -69,6 +69,28 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="antiphishingapp" android:host="navercallback" />
             </intent-filter>
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:scheme="myapp"
+                    android:host="sms_list" />
+            </intent-filter>
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:scheme="myapp"
+                    android:host="call_list" />
+            </intent-filter>
         </activity>
 
         <!-- ✅ 투명 팝업 액티비티 등록 -->
@@ -81,7 +103,7 @@
 
         <!-- ✅ 문자 수신 리시버 -->
         <receiver
-            android:name=".utils.SmsReceiver"
+            android:name=".receiver.SmsReceiver"
             android:exported="true"
             android:permission="android.permission.BROADCAST_SMS">
             <intent-filter android:priority="1000">
