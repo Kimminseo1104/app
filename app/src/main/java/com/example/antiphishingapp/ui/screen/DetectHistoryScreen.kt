@@ -76,37 +76,35 @@ fun DetectHistoryScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 24.dp)
-                .verticalScroll(rememberScrollState())
         ) {
             Spacer(modifier = Modifier.height(32.dp))
 
             TopBar(userName = userName)
             Spacer(modifier = Modifier.height(62.dp))
 
-            // 헤더
             DetectHistoryHeader()
             Spacer(modifier = Modifier.height(32.dp))
 
-            // 문자 내역 확인 카드
-            ActionCard(
-                title = "문자 내역 확인",
-                description = "수신한 문자에 대한\n탐지 기록을 확인할 수 있습니다.",
-                iconRes = R.drawable.message_history,
-                onClick = { navController.navigate("smsList") }
-            )
-            Spacer(modifier = Modifier.height(25.dp))
+            Column(
+                modifier = Modifier.verticalScroll(rememberScrollState())
+            ) {
+                ActionCard(
+                    title = "문자 내역 확인",
+                    description = "수신한 문자에 대한\n탐지 기록을 확인할 수 있습니다.",
+                    iconRes = R.drawable.message_history,
+                    onClick = { navController.navigate("smsList") }
+                )
+                Spacer(modifier = Modifier.height(25.dp))
 
-            // 전화 내역 확인 카드
-            ActionCard(
-                title = "전화 내역 확인",
-                description = "수신한 전화에 대한\n탐지 기록을 확인할 수 있습니다.",
-                iconRes = R.drawable.call_history,
-                onClick = { navController.navigate("callList") }
-            )
+                ActionCard(
+                    title = "전화 내역 확인",
+                    description = "수신한 전화에 대한\n탐지 기록을 확인할 수 있습니다.",
+                    iconRes = R.drawable.call_history,
+                    onClick = { navController.navigate("callList") }
+                )
 
-            // 공통 HelpSection
-            Spacer(modifier = Modifier.weight(1f))
-            HelpSection(modifier = Modifier.padding(vertical = 64.dp))
+                HelpSection(modifier = Modifier.padding(vertical = 64.dp))
+            }
         }
     }
 }
@@ -238,7 +236,7 @@ private fun ActionCard(
                     lineHeight = 20.sp
                 )
             }
-            Spacer(Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(16.dp))
             Image(
                 painter = painterResource(id = iconRes),
                 contentDescription = title,

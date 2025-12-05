@@ -109,7 +109,6 @@ fun FileUploadScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 24.dp)
-                .verticalScroll(rememberScrollState())
         ) {
             Spacer(modifier = Modifier.height(32.dp))
 
@@ -119,26 +118,33 @@ fun FileUploadScreen(
             FileUploadHeader()
             Spacer(modifier = Modifier.height(32.dp))
 
-            // 이미지 업로드 버튼 – 사진 선택 → 서버 업로드
-            ActionCard(
-                title = "이미지 업로드",
-                description = "의심되는 문서 스캔 이미지를 첨부해\n위험도 확인이 가능합니다.",
-                iconRes = R.drawable.image_upload,
-                onClick = { pickImageLauncher.launch("image/*") }
-            )
 
-            Spacer(modifier = Modifier.height(25.dp))
+            Column(
+                modifier = Modifier.verticalScroll(rememberScrollState())
+            ){
+                // 이미지 업로드 버튼 – 사진 선택 → 서버 업로드
+                ActionCard(
+                    title = "이미지 업로드",
+                    description = "의심되는 문서 스캔 이미지를 첨부해\n위험도 확인이 가능합니다.",
+                    iconRes = R.drawable.image_upload,
+                    onClick = { pickImageLauncher.launch("image/*") }
+                )
 
-            // 음성 업로드 버튼 (추후 구현)
-            ActionCard(
-                title = "음성 업로드",
-                description = "의심되는 통화 녹음 파일을 첨부해\n위험도 확인이 가능합니다.",
-                iconRes = R.drawable.voice_upload,
-                onClick = { pickAudioLauncher.launch("audio/*") }
-            )
+                Spacer(modifier = Modifier.height(25.dp))
 
-            Spacer(modifier = Modifier.weight(1f))
-            HelpSection(modifier = Modifier.padding(vertical = 64.dp))
+                // 음성 업로드 버튼 (추후 구현)
+                ActionCard(
+                    title = "음성 업로드",
+                    description = "의심되는 통화 녹음 파일을 첨부해\n위험도 확인이 가능합니다.",
+                    iconRes = R.drawable.voice_upload,
+                    onClick = { pickAudioLauncher.launch("audio/*") }
+                )
+
+                Spacer(modifier = Modifier.weight(1f))
+                HelpSection(modifier = Modifier.padding(vertical = 64.dp))
+            }
+
+
         }
 
         // 로딩 오버레이

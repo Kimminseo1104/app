@@ -75,38 +75,35 @@ fun MainScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 24.dp)
-                .verticalScroll(rememberScrollState())
         ) {
             Spacer(modifier = Modifier.height(32.dp))
 
-            // 상단 바
             TopBar(userName = userName)
             Spacer(modifier = Modifier.height(103.dp))
 
-            // 환영 메시지
             Greeting(userName = userName)
             Spacer(modifier = Modifier.height(32.dp))
 
-            // 파일 업로드 카드
-            ActionCard(
-                title = "파일 업로드",
-                description = "문서 이미지 캡쳐, 음성 메시지의\n피싱 위험도 확인이 가능합니다.",
-                iconRes = R.drawable.mainscreen01,
-                onClick = { navController.navigate("fileUpload") }
-            )
-            Spacer(modifier = Modifier.height(25.dp))
+            Column(
+                modifier = Modifier.verticalScroll(rememberScrollState())
+            ) {
+                ActionCard(
+                    title = "파일 업로드",
+                    description = "문서 이미지 캡쳐, 음성 메시지의\n피싱 위험도 확인이 가능합니다.",
+                    iconRes = R.drawable.mainscreen01,
+                    onClick = { navController.navigate("fileUpload") }
+                )
+                Spacer(modifier = Modifier.height(25.dp))
 
-            // 탐지 기록 확인 카드
-            ActionCard(
-                title = "탐지 기록 확인",
-                description = "의심 전화 및 문자를 탐지하고,\n위험도를 확인할 수 있습니다.",
-                iconRes = R.drawable.mainscreen02,
-                onClick = { navController.navigate("detectHistory") }
-            )
+                ActionCard(
+                    title = "탐지 기록 확인",
+                    description = "의심 전화 및 문자를 탐지하고,\n위험도를 확인할 수 있습니다.",
+                    iconRes = R.drawable.mainscreen02,
+                    onClick = { navController.navigate("detectHistory") }
+                )
 
-            // 하단 도움말
-            Spacer(modifier = Modifier.weight(1f))
-            HelpSection(modifier = Modifier.padding(vertical = 64.dp))
+                HelpSection(modifier = Modifier.padding(vertical = 64.dp))
+            }
         }
     }
 }
@@ -148,7 +145,9 @@ fun TopBar(userName: String) {
 }
 
 @Composable
-fun Greeting(userName: String) {
+fun Greeting(userName:
+
+             String) {
     Column {
         Row(verticalAlignment = Alignment.Bottom) {
             Text(
@@ -231,7 +230,7 @@ fun ActionCard(
                     lineHeight = 20.sp
                 )
             }
-            Spacer(Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(16.dp))
             Image(
                 painter = painterResource(id = iconRes),
                 contentDescription = title,
