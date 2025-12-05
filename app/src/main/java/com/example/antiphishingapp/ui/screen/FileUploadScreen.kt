@@ -34,19 +34,25 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.antiphishingapp.R
 import com.example.antiphishingapp.feature.model.AnalysisResponse
+import com.example.antiphishingapp.feature.model.VoiceUiResult
 import com.example.antiphishingapp.feature.viewmodel.AnalysisViewModel
+import com.example.antiphishingapp.feature.viewmodel.VoiceAnalysisViewModel
 import com.example.antiphishingapp.theme.*
 import com.example.antiphishingapp.viewmodel.AuthViewModel
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
+import java.io.File
+
 
 @Composable
 fun FileUploadScreen(
     navController: NavController,
     authViewModel: AuthViewModel,
     analysisViewModel: AnalysisViewModel,
-    onUploadSuccess: (AnalysisResponse) -> Unit
+    voiceAnalysisViewModel: VoiceAnalysisViewModel,
+    onUploadSuccess: (AnalysisResponse) -> Unit,
+    onVoiceUploadSuccess: (VoiceUiResult) -> Unit
 ) {
     val userState by authViewModel.user.collectAsState()
     val userName = userState?.fullName ?: "사용자"
@@ -55,8 +61,30 @@ fun FileUploadScreen(
     val result by analysisViewModel.result.observeAsState()
     val error by analysisViewModel.error.observeAsState()
 
+    val voiceLoading by voiceAnalysisViewModel.loading.observeAsState(false)
+    val voiceResult by voiceAnalysisViewModel.result.observeAsState()
+    val voiceError by voiceAnalysisViewModel.error.observeAsState()
+
     val context = LocalContext.current
 
+    // 음성 파일 선택 런처
+    val pickAudioLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+            if (uri != null) {
+                val file = uriToTempFile(context, uri)
+                voiceAnalysisViewModel.analyzeVoice(file)
+            }
+        }
+
+    // 음성 분석 완료 시 NavGraph로 전달
+    LaunchedEffect(voiceResult) {
+        voiceResult?.let { result ->
+            onVoiceUploadSuccess(result)
+            voiceAnalysisViewModel.resetResult()
+        }
+    }
+
+    // 이미지 선택 런처
     val pickImageLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             if (uri != null) {
@@ -65,15 +93,12 @@ fun FileUploadScreen(
             }
         }
 
+    // 분석 완료 → 상위(AppNavGraph)로 결과 전달 후, ViewModel 상태 초기화
     LaunchedEffect(result) {
         result?.let { analysis ->
-            onUploadSuccess(analysis)
-            analysisViewModel.resetResult()
+            onUploadSuccess(analysis)          // imageUploadResult 에 넣고
+            analysisViewModel.resetResult()   // 다음 호출 대비 초기화
         }
-    }
-
-    LaunchedEffect(error) {
-
     }
 
     Surface(
@@ -93,9 +118,11 @@ fun FileUploadScreen(
             FileUploadHeader()
             Spacer(modifier = Modifier.height(32.dp))
 
+
             Column(
                 modifier = Modifier.verticalScroll(rememberScrollState())
-            ) {
+            ){
+                // 이미지 업로드 버튼 – 사진 선택 → 서버 업로드
                 ActionCard(
                     title = "이미지 업로드",
                     description = "의심되는 문서 스캔 이미지를 첨부해\n위험도 확인이 가능합니다.",
@@ -105,17 +132,22 @@ fun FileUploadScreen(
 
                 Spacer(modifier = Modifier.height(25.dp))
 
+                // 음성 업로드 버튼 (추후 구현)
                 ActionCard(
                     title = "음성 업로드",
                     description = "의심되는 통화 녹음 파일을 첨부해\n위험도 확인이 가능합니다.",
                     iconRes = R.drawable.voice_upload,
-                    onClick = { }
+                    onClick = { pickAudioLauncher.launch("audio/*") }
                 )
 
+                Spacer(modifier = Modifier.weight(1f))
                 HelpSection(modifier = Modifier.padding(vertical = 64.dp))
             }
+
+
         }
 
+        // 로딩 오버레이
         if (loading) {
             Box(
                 Modifier
@@ -126,9 +158,20 @@ fun FileUploadScreen(
                 CircularProgressIndicator(color = Primary900)
             }
         }
+        if (voiceLoading) {
+            Box(
+                Modifier.fillMaxSize().background(Grayscale300.copy(alpha = 0.2f)),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = Primary900)
+            }
+        }
     }
 }
 
+/**
+ * URI → MultipartBody.Part 변환
+ */
 fun uriToMultipart(field: String, uri: Uri, context: Context): MultipartBody.Part {
     val inputStream = context.contentResolver.openInputStream(uri)!!
     val bytes = inputStream.readBytes()
@@ -136,6 +179,21 @@ fun uriToMultipart(field: String, uri: Uri, context: Context): MultipartBody.Par
 
     val requestBody = bytes.toRequestBody("image/*".toMediaType())
     return MultipartBody.Part.createFormData(field, "upload.jpg", requestBody)
+}
+
+fun uriToTempFile(context: Context, uri: Uri): File {
+    val inputStream = context.contentResolver.openInputStream(uri)
+        ?: throw IllegalArgumentException("Uri InputStream is null")
+
+    // cacheDir 안에 임시 파일 생성
+    val tempFile = File.createTempFile("voice_upload_", ".tmp", context.cacheDir)
+
+    inputStream.use { input ->
+        tempFile.outputStream().use { output ->
+            input.copyTo(output)
+        }
+    }
+    return tempFile
 }
 
 @Composable
