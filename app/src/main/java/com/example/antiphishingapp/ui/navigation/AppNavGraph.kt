@@ -8,39 +8,35 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.antiphishingapp.feature.model.AnalysisResponse
+import com.example.antiphishingapp.feature.model.VoiceUiResult
 import com.example.antiphishingapp.feature.viewmodel.AnalysisViewModel
 import com.example.antiphishingapp.feature.viewmodel.LoginViewModel
-import com.example.antiphishingapp.ui.screen.FileUploadScreen
-import com.example.antiphishingapp.ui.screen.ImageUploadResultScreen
-import com.example.antiphishingapp.ui.screen.RealtimeScreen
+import com.example.antiphishingapp.feature.viewmodel.VoiceAnalysisViewModel
 import com.example.antiphishingapp.ui.main.MainScreen
-import com.example.antiphishingapp.ui.screen.DetectHistoryScreen
-import com.example.antiphishingapp.ui.screen.SignUpScreen
-import com.example.antiphishingapp.ui.screen.TitleScreen
-import com.example.antiphishingapp.ui.screen.LoginScreen
-import com.example.antiphishingapp.ui.screen.SmsListScreen
+import com.example.antiphishingapp.ui.screen.*
 import com.example.antiphishingapp.viewmodel.AuthViewModel
-import com.example.antiphishingapp.ui.screen.CallListScreen
 
 @Composable
 fun AppNavGraph(navController: NavHostController, startRoute: String) {
 
     val authViewModel: AuthViewModel = viewModel()
     val analysisViewModel: AnalysisViewModel = viewModel()
+    val voiceAnalysisViewModel: VoiceAnalysisViewModel = viewModel()
 
-    // 🔹 이미지 분석 결과를 보관하는 상태
+    // 이미지 업로드 결과
     val imageUploadResult = remember { mutableStateOf<AnalysisResponse?>(null) }
+
+    // 음성 업로드 결과 (String → VoiceUiResult 로 변경!)
+    val voiceUploadResult = remember { mutableStateOf<VoiceUiResult?>(null) }
 
     NavHost(
         navController = navController,
         startDestination = startRoute
     ) {
-        // 타이틀 화면
         composable("title") {
             TitleScreen(navController = navController)
         }
 
-        // 로그인 화면
         composable("login") {
             LoginScreen(
                 navController = navController,
@@ -60,22 +56,26 @@ fun AppNavGraph(navController: NavHostController, startRoute: String) {
             )
         }
 
-        // 파일 업로드 화면 (여기서 분석 요청)
+        // 파일 업로드 화면
         composable("fileUpload") {
             FileUploadScreen(
                 navController = navController,
                 authViewModel = authViewModel,
                 analysisViewModel = analysisViewModel,
+                voiceAnalysisViewModel = voiceAnalysisViewModel,
 
-                // 🔹 업로드 성공 시 네비게이션 + 상태 저장
                 onUploadSuccess = { result ->
                     imageUploadResult.value = result
                     navController.navigate("imageUploadResult")
+                },
+
+                onVoiceUploadSuccess = { result ->
+                    voiceUploadResult.value = result
+                    navController.navigate("voiceUploadResult")
                 }
             )
         }
 
-        // 탐지 기록 화면
         composable("detectHistory") {
             DetectHistoryScreen(
                 navController = navController,
@@ -83,17 +83,9 @@ fun AppNavGraph(navController: NavHostController, startRoute: String) {
             )
         }
 
-        // 문자 내역 확인 화면
-        composable("smsList") {
-            SmsListScreen()
-        }
+        composable("smsList") { SmsListScreen() }
+        composable("callList") { CallListScreen() }
 
-        // 전화 내역 확인 화면
-        composable("callList") {
-            CallListScreen()
-        }
-
-        // 회원가입 화면
         composable("signup") {
             SignUpScreen(
                 navController = navController,
@@ -101,7 +93,7 @@ fun AppNavGraph(navController: NavHostController, startRoute: String) {
             )
         }
 
-        // 🔹 이미지 업로드 결과 화면 (현재 사용)
+        // 이미지 업로드 결과
         composable("imageUploadResult") {
             imageUploadResult.value?.let { result ->
                 ImageUploadResultScreen(
@@ -111,7 +103,18 @@ fun AppNavGraph(navController: NavHostController, startRoute: String) {
             }
         }
 
-        // 실시간 통화 화면
+        // 음성 업로드 결과
+        composable("voiceUploadResult") {
+            voiceUploadResult.value?.let { result ->
+                VoiceUploadResultScreen(
+                    navController = navController,
+                    riskScore = result.riskScore,
+                    suspiciousItems = result.suspiciousItems,
+                    transcript = result.transcript
+                )
+            }
+        }
+
         composable("realtime") {
             RealtimeScreen()
         }

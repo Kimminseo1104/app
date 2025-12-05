@@ -28,7 +28,7 @@ fun RealtimeScreen(
             .padding(16.dp)
     ) {
 
-        // 1️⃣ 음성 인식 중간/최종 텍스트
+        // 1) 음성 인식 중간/최종 텍스트
         if (latestMessage?.type == "transcription") {
             Text(
                 text = latestMessage?.text ?: "",
@@ -37,7 +37,7 @@ fun RealtimeScreen(
             )
         }
 
-        // 2️⃣ 즉시 탐지 (키워드 기반)
+        // 2) 즉시 탐지 (키워드 기반)
         if (latestMessage?.type == "phishing_alert" &&
             latestMessage?.alert_type == "immediate") {
 
@@ -48,7 +48,7 @@ fun RealtimeScreen(
             )
         }
 
-        // 3️⃣ 종합 탐지 결과
+        // 3️) 종합 탐지 결과
         if (latestMessage?.type == "phishing_alert" &&
             latestMessage?.alert_type == "comprehensive") {
 

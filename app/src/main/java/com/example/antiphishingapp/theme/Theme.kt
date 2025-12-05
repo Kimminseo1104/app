@@ -6,6 +6,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.graphics.Color
+
 
 // Dark 색상 세트
 private val DarkColorScheme = darkColorScheme(
@@ -30,9 +34,20 @@ fun AntiPhishingAppTheme(
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
+
+    val systemUiController = rememberSystemUiController()
+    val useDarkIcons = true   // ⭐ 검정색 아이콘으로 설정
+
+    SideEffect {
+        systemUiController.setStatusBarColor(
+            color = Color.Transparent, // 상태바 배경 색 → 투명 유지
+            darkIcons = useDarkIcons   // 아이콘을 검정색으로!
+        )
+    }
+
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = AppTypography,  // Type.kt에서 Typography만 가져옴
+        typography = AppTypography,
         content = content
     )
 }
