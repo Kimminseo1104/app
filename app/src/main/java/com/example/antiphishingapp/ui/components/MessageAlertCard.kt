@@ -11,6 +11,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import com.example.antiphishingapp.R
 import com.example.antiphishingapp.theme.Pretendard
 import com.example.antiphishingapp.theme.Primary900
@@ -22,62 +24,65 @@ fun MessageAlertCard(
     onDismiss: () -> Unit,
 ) {
     Card(
-        shape = RoundedCornerShape(28.dp),
+        shape = RoundedCornerShape(10.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFFFCFBFF)),
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(20.dp)
-    ) {
+            .size(width = 364.dp, height = 124.dp)
+    )  {
 
         Column(
-            modifier = Modifier.padding(24.dp)
+            modifier = Modifier
+                .fillMaxHeight()
+                .padding(20.dp),
+            verticalArrangement = Arrangement.SpaceBetween
         ) {
 
             Row(verticalAlignment = Alignment.CenterVertically) {
 
                 Icon(
-                    painter = painterResource(R.drawable.ic_message), // 아이콘 필요
+                    painter = painterResource(R.drawable.ic_message),
                     contentDescription = null,
                     tint = Primary900,
-                    modifier = Modifier.size(42.dp)
+                    modifier = Modifier.size(32.dp)
                 )
 
-                Spacer(Modifier.width(12.dp))
+                Spacer(Modifier.width(15.dp))
 
                 Text(
-                    text = "문자에서 위험 키워드가\n확인되었습니다.",
-                    fontSize = 20.sp,
-                    lineHeight = 26.sp,
+                    text = "문자에서 위험 키워드가 확인되었습니다.",
                     fontFamily = Pretendard,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 16.sp,
+                    textAlign = TextAlign.Center,
                     color = Primary900
                 )
             }
 
-            Spacer(Modifier.height(26.dp))
-
             Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(17.dp),
             ) {
 
                 Button(
                     onClick = onCheckKeyword,
                     colors = ButtonDefaults.buttonColors(containerColor = Primary900),
-                    shape = RoundedCornerShape(18.dp),
-                    modifier = Modifier.weight(1f)
+                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(40.dp)
                 ) {
-                    Text("문자 확인하기", color = Color.White, fontSize = 14.sp)
+                    Text("문자 확인하기", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
                 }
-
-                Spacer(Modifier.width(12.dp))
 
                 Button(
                     onClick = onDismiss,
                     colors = ButtonDefaults.buttonColors(containerColor = Primary300),
-                    shape = RoundedCornerShape(18.dp),
-                    modifier = Modifier.weight(1f)
+                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(40.dp)
                 ) {
-                    Text("알림 지우기", color = Primary900, fontSize = 14.sp)
+                    Text("알림 지우기", color = Primary900, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
                 }
             }
         }
