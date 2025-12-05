@@ -42,10 +42,9 @@ import com.example.antiphishingapp.feature.model.AnalysisResponse
 import com.example.antiphishingapp.feature.model.StampBox
 import com.example.antiphishingapp.network.ApiClient
 import com.example.antiphishingapp.theme.*
+import com.example.antiphishingapp.feature.model.SuspiciousItem
 
-/*****************************************************
- * 메인 화면 – 실제 문서 분석 결과
- *****************************************************/
+// 메인 화면 – 실제 문서 분석 결과
 @Composable
 fun ImageUploadResultScreen(
     navController: NavController,
@@ -216,7 +215,7 @@ fun ImageUploadResultScreen(
 
 
             /*****************************************************
-             * ⭐ 5) 전체 화면 팝업 레이어 (원본 이미지 + 박스)
+             * 5) 전체 화면 팝업 레이어 (원본 이미지 + 박스)
              *****************************************************/
             if (showPopup) {
                 FullscreenImageOverlay(
@@ -229,9 +228,7 @@ fun ImageUploadResultScreen(
     }
 }
 
-/*****************************************************
- * 전체 화면 오버레이 팝업
- *****************************************************/
+// 전체 화면 오버레이 팝업
 @Composable
 fun FullscreenImageOverlay(
     painter: Painter,
@@ -280,9 +277,7 @@ fun FullscreenImageOverlay(
     }
 }
 
-/*****************************************************
- * 박스 오버레이 – 스케일 자동 적용
- *****************************************************/
+// 박스 오버레이 – 스케일 자동 적용
 @Composable
 fun StampBoxOverlay(
     painter: Painter,
@@ -312,9 +307,7 @@ fun StampBoxOverlay(
     }
 }
 
-/*****************************************************
- * 기타 컴포저블 그대로 유지
- *****************************************************/
+// 기타 컴포저블
 @Composable
 fun calculateScoreColor(score: Int): Color {
 
@@ -407,11 +400,6 @@ fun generateSuspiciousItems(analysis: AnalysisResponse): List<SuspiciousItem> {
         list.add(SuspiciousItem("위험 키워드 감지: 총 점수 ${analysis.keyword.total_score}"))
     if (!analysis.layout.error && analysis.layout.score > 0.3f)
         list.add(SuspiciousItem("문서 레이아웃이 비정상적으로 감지되었습니다."))
-    if (list.isEmpty()) list.add(SuspiciousItem("위조 의심 항목이 없습니다.", false))
+    if (list.isEmpty()) list.add(SuspiciousItem("위조 의심 항목이 없습니다."))
     return list
 }
-
-data class SuspiciousItem(
-    val description: String,
-    val isCritical: Boolean = true
-)
