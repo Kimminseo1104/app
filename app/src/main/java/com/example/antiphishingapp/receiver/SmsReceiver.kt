@@ -1,22 +1,24 @@
-package com.example.antiphishingapp.utils
+package com.example.antiphishingapp.receiver
 
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.provider.Telephony
-import android.telephony.SmsMessage
 import android.util.Log
+import com.example.antiphishingapp.data.local.AppDatabase
+import com.example.antiphishingapp.data.local.SmsEntity
 import com.example.antiphishingapp.network.ApiClient
 import com.example.antiphishingapp.network.SmsDetectRequest
 import com.example.antiphishingapp.network.SmsDetectResponse
+import com.example.antiphishingapp.ui.AlertActivity
+import com.example.antiphishingapp.utils.SaltKeeper
+import com.example.antiphishingapp.utils.Sanitizer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import com.example.antiphishingapp.data.local.AppDatabase
-import com.example.antiphishingapp.data.local.SmsEntity
 
 class SmsReceiver : BroadcastReceiver() {
 
@@ -79,16 +81,17 @@ class SmsReceiver : BroadcastReceiver() {
                         )
 
                         if (score >= 70) {
-                            val popupIntent = Intent(context, com.example.antiphishingapp.ui.AlertActivity::class.java).apply {
+                            val popupIntent = Intent(context, AlertActivity::class.java).apply {
                                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                                 addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
                                 addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                                putExtra("type", "sms")
                             }
                             context.startActivity(popupIntent)
                             Log.d("SmsReceiver", "🚨 위험 감지! 알림창 실행됨 (점수: $score)")
 
                             CoroutineScope(Dispatchers.IO).launch {
-                                val db = AppDatabase.getDatabase(context)
+                                val db = AppDatabase.Companion.getDatabase(context)
                                 db.smsDao().insertSms(
                                     SmsEntity(
                                         sender = sender,

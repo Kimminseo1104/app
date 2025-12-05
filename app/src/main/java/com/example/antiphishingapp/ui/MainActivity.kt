@@ -3,11 +3,11 @@ package com.example.antiphishingapp.ui
 import android.Manifest
 import android.content.pm.PackageManager
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
-import android.net.Uri
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -26,9 +26,9 @@ import org.opencv.android.OpenCVLoader
 
 class MainActivity : ComponentActivity() {
 
-    // AuthRepository 인스턴스 (자동 로그인 체크용)
     private lateinit var authRepository: AuthRepository
 
+    /** 단일 권한 요청 런처 (이미지 권한 요청에 사용) */
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
             if (isGranted) {
@@ -44,46 +44,40 @@ class MainActivity : ComponentActivity() {
         // AuthRepository 초기화
         authRepository = AuthRepository(applicationContext)
 
-        //OpenCV 초기화
+        // OpenCV 초기화
         if (OpenCVLoader.initDebug()) {
             Log.d("OpenCV", "OpenCV 초기화 성공")
         } else {
             Log.e("OpenCV", "OpenCV 초기화 실패")
         }
 
-        // 다른 앱 위에 표시 권한 요청
-        if (!android.provider.Settings.canDrawOverlays(this)) {
-            val intent = android.content.Intent(
-                android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                android.net.Uri.parse("package:$packageName")
-            )
-            startActivity(intent)
-        }
+        // 🔥 앱 오버레이 권한 요청
+        requestOverlayPermission()
 
-        // 문자 관련 권한 요청
+        // 🔥 전화 + 마이크 권한 요청
+        checkCallPermissions()
+
+        // 🔥 문자 권한 요청
         checkSmsPermission()
 
-        // 이미지 권한 요청
+        // 🔥 이미지 권한 요청
         checkImagePermission()
 
-        // 알림 권한 요청 (Android 13+)
+        // 🔥 알림 권한 요청 (안드로이드 13+)
         checkNotificationPermission()
 
-        // 알림 채널 생성 (SmsReceiver에서 Notification 사용 가능하게)
+        // 🔔 알림 채널 생성
         NotificationHelper.createChannel(this)
 
+        // 🧭 Compose Navigation 설정
         setContent {
-            //자동 로그인 초기 경로 설정
             val startDestination = remember {
-                if (authRepository.isAuthenticated()) {
-                    "main" // 토큰이 있으면 바로 메인
-                } else {
-                    "title" // 토큰이 없으면 타이틀 화면
-                }
-        }
+                if (authRepository.isAuthenticated()) "main" else "title"
+            }
 
             AntiPhishingAppTheme {
                 val navController = rememberNavController()
+
                 Surface(
                     modifier = Modifier,
                     color = MaterialTheme.colorScheme.background
@@ -95,38 +89,29 @@ class MainActivity : ComponentActivity() {
     }
 
     /**
-     * 앱이 실행 중일 때 새로운 인텐트(주로 소셜 로그인 콜백 URI)를 수신합니다.
+     * 📌 전화 감지 + 녹음 권한 요청
+     * READ_PHONE_STATE / RECORD_AUDIO
      */
-    override fun onNewIntent(intent: Intent) {
-        super.onNewIntent(intent)
+    private fun checkCallPermissions() {
+        val permissions = arrayOf(
+            Manifest.permission.READ_PHONE_STATE,
+            Manifest.permission.RECORD_AUDIO
+        )
 
-        val uri: Uri? = intent.data
-
-        // 인텐트가 ACTION_VIEW (URI 호출) 타입이고 데이터(URI)를 포함하는지 확인
-        if (intent.action == Intent.ACTION_VIEW && uri != null) {
-            Log.d("SOCIAL_LOGIN", "Received callback URI: $uri")
-            // 콜백 URI를 ViewModel에서 접근할 수 있도록 핸들러에 전달
-            SocialLoginCallbackHandler.handleUri(uri)
+        val notGranted = permissions.filter {
+            ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
         }
-    }
 
-    private fun checkImagePermission() {
-        val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            Manifest.permission.READ_MEDIA_IMAGES
+        if (notGranted.isNotEmpty()) {
+            ActivityCompat.requestPermissions(this, notGranted.toTypedArray(), 103)
         } else {
-            Manifest.permission.READ_EXTERNAL_STORAGE
-        }
-
-        when {
-            ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED -> {
-                Log.d("PERMISSION", "이미지 접근 권한 허용됨")
-            }
-            else -> {
-                requestPermissionLauncher.launch(permission)
-            }
+            Log.d("PERMISSION", "전화/녹음 권한 이미 허용됨")
         }
     }
 
+    /**
+     * 📩 SMS 관련 권한 요청
+     */
     private fun checkSmsPermission() {
         val smsPermissions = arrayOf(
             Manifest.permission.RECEIVE_SMS,
@@ -138,18 +123,41 @@ class MainActivity : ComponentActivity() {
         }
 
         if (notGranted.isNotEmpty()) {
-            // this (Activity Context) 사용 가능
             ActivityCompat.requestPermissions(this, notGranted.toTypedArray(), 101)
         } else {
             Log.d("PERMISSION", "문자 관련 권한 이미 허용됨")
         }
     }
 
+    /**
+     * 🖼 이미지 접근 권한 요청
+     */
+    private fun checkImagePermission() {
+        val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            Manifest.permission.READ_MEDIA_IMAGES
+        } else {
+            Manifest.permission.READ_EXTERNAL_STORAGE
+        }
+
+        when {
+            ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED -> {
+                Log.d("PERMISSION", "이미지 권한 이미 허용됨")
+            }
+
+            else -> {
+                requestPermissionLauncher.launch(permission)
+            }
+        }
+    }
+
+    /**
+     * 🔔 알림 권한 요청 (Android 13+)
+     */
     private fun checkNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             val permission = Manifest.permission.POST_NOTIFICATIONS
+
             if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
-                // this (Activity Context) 사용 가능
                 ActivityCompat.requestPermissions(this, arrayOf(permission), 102)
             } else {
                 Log.d("PERMISSION", "알림 권한 이미 허용됨")
@@ -157,19 +165,45 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    /**
+     * 🪟 오버레이 권한 요청
+     */
+    private fun requestOverlayPermission() {
+        if (!android.provider.Settings.canDrawOverlays(this)) {
+            val intent = Intent(
+                android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                Uri.parse("package:$packageName")
+            )
+            startActivity(intent)
+        }
+    }
+
+    /**
+     * 📌 앱 실행 중 URI 딥링크 처리 (소셜 로그인용)
+     */
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+
+        val uri: Uri? = intent.data
+
+        if (intent.action == Intent.ACTION_VIEW && uri != null) {
+            Log.d("SOCIAL_LOGIN", "Received callback URI: $uri")
+            SocialLoginCallbackHandler.handleUri(uri)
+        }
+    }
 }
 
-// MainActivity 외부에 임시로 정의하는 콜백 핸들러
-// Compose 환경에서 URI를 가져가 처리할 수 있도록 도와주는 브리지 역할
+// ───────────────────────────────────────────────────────────────
+// 🔗 소셜 로그인 딥링크 콜백 처리
+// ───────────────────────────────────────────────────────────────
+
 object SocialLoginCallbackHandler {
     private var callbackUri: Uri? = null
 
-    // MainActivity가 URI를 저장할 때 사용
     fun handleUri(uri: Uri) {
         callbackUri = uri
     }
 
-    // TitleScreen(ViewModel)이 URI를 가져갈 때 사용 (가져간 후 바로 삭제)
     fun getAndClearUri(): Uri? {
         val uri = callbackUri
         callbackUri = null

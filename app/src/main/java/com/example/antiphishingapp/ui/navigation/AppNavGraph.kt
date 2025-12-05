@@ -7,6 +7,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navDeepLink
 import com.example.antiphishingapp.feature.model.AnalysisResponse
 import com.example.antiphishingapp.feature.model.VoiceUiResult
 import com.example.antiphishingapp.feature.viewmodel.AnalysisViewModel
@@ -83,8 +84,19 @@ fun AppNavGraph(navController: NavHostController, startRoute: String) {
             )
         }
 
-        composable("smsList") { SmsListScreen() }
-        composable("callList") { CallListScreen() }
+        composable(
+            route = "smsList",
+            deepLinks = listOf(navDeepLink { uriPattern = "myapp://sms_list" })
+        ) {
+            SmsListScreen()
+        }
+
+        composable(
+            route = "callList",
+            deepLinks = listOf(navDeepLink { uriPattern = "myapp://call_list" })
+        ) {
+            CallListScreen()
+        }
 
         composable("signup") {
             SignUpScreen(
