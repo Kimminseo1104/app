@@ -41,7 +41,8 @@ fun AppNavGraph(navController: NavHostController, startRoute: String) {
         composable("login") {
             LoginScreen(
                 navController = navController,
-                viewModel = viewModel<LoginViewModel>()
+                viewModel = viewModel<LoginViewModel>(),
+                authViewModel = authViewModel
             )
         }
 

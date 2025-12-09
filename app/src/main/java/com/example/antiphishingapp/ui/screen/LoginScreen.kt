@@ -41,11 +41,15 @@ import com.example.antiphishingapp.theme.Primary100
 import com.example.antiphishingapp.theme.Primary300
 import com.example.antiphishingapp.theme.Primary900
 import com.example.antiphishingapp.theme.Pretendard
+import androidx.compose.runtime.collectAsState
+import com.example.antiphishingapp.viewmodel.AuthViewModel
+
 
 @Composable
 fun LoginScreen(
     navController: NavController,
-    viewModel: LoginViewModel = viewModel()
+    viewModel: LoginViewModel = viewModel(),
+    authViewModel: AuthViewModel
 ) {
     val email by viewModel.email.observeAsState("")
     val password by viewModel.password.observeAsState("")
@@ -55,15 +59,15 @@ fun LoginScreen(
     val isAutoLoginChecked by viewModel.isAutoLoginChecked.observeAsState(false)
     val context = LocalContext.current
 
-    // 로그인 버튼 인터랙션 소스 및 상태 정의
+    val authIsLoading by authViewModel.isLoading.collectAsState()
+    val combinedIsLoading = isLoading || authIsLoading
+
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val isHovered by interactionSource.collectIsHoveredAsState()
 
-    // 상태에 따른 버튼 색상 결정 (마우스 오버 또는 눌렸을 때 색상 반전)
     val isActive = isPressed || isHovered
-    // 로딩 중이 아닐 때만 hover 효과 적용 (로딩 중엔 기본 색상 유지)
-    val finalIsActive = isActive && !isLoading
+    val finalIsActive = isActive && !combinedIsLoading
 
     val buttonContainerColor = if (finalIsActive) Primary900 else Primary300
     val buttonContentColor = if (finalIsActive) Primary100 else Primary900
@@ -71,8 +75,9 @@ fun LoginScreen(
     // 로그인 성공 시 메인 화면으로 이동
     LaunchedEffect(loginSuccess) {
         if (loginSuccess) {
+            authViewModel.reloadUser()
             navController.navigate("main") {
-                popUpTo("login") { inclusive = true } // 로그인 스택 제거
+                popUpTo("login") { inclusive = true }
             }
         }
     }
@@ -113,7 +118,7 @@ fun LoginScreen(
                 label = "이메일",
                 icon = Icons.Default.Person,
                 keyboardType = KeyboardType.Email,
-                enabled = !isLoading
+                enabled = !combinedIsLoading
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -125,7 +130,7 @@ fun LoginScreen(
                 label = "비밀번호",
                 icon = Icons.Default.Lock,
                 isPassword = true,
-                enabled = !isLoading
+                enabled = !combinedIsLoading
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -139,7 +144,7 @@ fun LoginScreen(
                     checked = isAutoLoginChecked,
                     onCheckedChange = viewModel::onAutoLoginCheckedChange,
                     colors = CheckboxDefaults.colors(checkedColor = Primary900),
-                    enabled = !isLoading
+                    enabled = !combinedIsLoading
                 )
                 Text(
                     "자동 로그인",
@@ -153,12 +158,12 @@ fun LoginScreen(
             // 로그인하기 버튼
             Button(
                 onClick = viewModel::onLoginClicked,
-                enabled = !isLoading,
-                interactionSource = interactionSource, // 인터랙션 소스 연결
+                enabled = !combinedIsLoading,
+                interactionSource = interactionSource,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = buttonContainerColor,
                     contentColor = buttonContentColor,
-                    disabledContainerColor = Primary300, // 로딩 중 비활성화 색상 유지
+                    disabledContainerColor = Primary300,
                     disabledContentColor = Primary900
                 ),
                 shape = RoundedCornerShape(12.dp),
@@ -166,8 +171,7 @@ fun LoginScreen(
                     .fillMaxWidth()
                     .height(56.dp)
             ) {
-                if (isLoading) {
-                    // 로딩 인디케이터 색상도 현재 버튼 텍스트 색상과 일치시킴
+                if (combinedIsLoading) {
                     CircularProgressIndicator(
                         color = buttonContentColor,
                         modifier = Modifier.size(24.dp)
@@ -233,5 +237,10 @@ private fun LoginInputField(
 @Preview(showBackground = true)
 @Composable
 fun LoginScreenPreview() {
-    LoginScreen(navController = rememberNavController(), viewModel = viewModel())
+
+    LoginScreen(
+        navController = rememberNavController(),
+        viewModel = viewModel(),
+        authViewModel = viewModel()
+    )
 }
