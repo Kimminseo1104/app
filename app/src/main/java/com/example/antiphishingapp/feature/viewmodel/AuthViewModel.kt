@@ -13,7 +13,6 @@ class AuthViewModel(
     application: Application
 ) : AndroidViewModel(application) {
 
-    // ApplicationContext 주입 (LoginViewModel과 패턴을 맞춤)
     private val authRepository = AuthRepository(application.applicationContext)
 
     private val _user = MutableStateFlow<UserResponse?>(null)
@@ -23,7 +22,7 @@ class AuthViewModel(
     val isLoading: StateFlow<Boolean> = _isLoading
 
     init {
-        loadUser()   // 앱 초기 사용자 정보 로드
+        loadUser()
     }
 
     /** 서버에서 로그인 중인 사용자 정보 가져오기 */
@@ -36,5 +35,13 @@ class AuthViewModel(
 
             _isLoading.value = false
         }
+    }
+
+    /** 로그인 직후 사용자 정보를 다시 로드하고 완료될 때까지 대기 */
+    suspend fun reloadUser() {
+        _isLoading.value = true
+        val userInfo = authRepository.getMe()
+        _user.value = userInfo
+        _isLoading.value = false
     }
 }
